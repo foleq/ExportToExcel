@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="ExcelBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WorksheetPartBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
