@@ -32,12 +32,22 @@ namespace ExportToExcel
 
         public void AddRowToWorksheet(string worksheetName, string[] cellValues)
         {
+            ThrowExceptionIfBuildingIsFinished();
+
             if (_worksheetPartBuilders.ContainsKey(worksheetName) == false)
             {
                 var worksheetBuilder = new WorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>());
                 _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);    
             }
             _worksheetPartBuilders[worksheetName].AddRow(cellValues);
+        }
+
+        private void ThrowExceptionIfBuildingIsFinished()
+        {
+            if (_buildingIsFinished)
+            {
+                throw new InvalidOperationException("WorksheetPartBuilder has finished building and any adding is not allowed.");
+            }
         }
 
         public byte[] FinishAndGetExcel()
@@ -66,7 +76,7 @@ namespace ExportToExcel
                 uint sheetId = 1;
                 foreach (var worksheetPartBuilder in _worksheetPartBuilders)
                 {
-                    var worksheetPart = worksheetPartBuilder.Value.FinishBuilding();
+                    var worksheetPart = worksheetPartBuilder.Value.FinishAndGetResult();
                     writer.WriteElement(new Sheet()
                     {
                         Name = worksheetPartBuilder.Key,

@@ -103,7 +103,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExcelBuilderSpecs.cs" />
+    <Compile Include="ExcelBuilderSpecs\ExcelBuilderSpecs.cs" />
+    <Compile Include="ExcelBuilderSpecs\When_creating_excel.cs" />
+    <Compile Include="ExcelBuilderSpecs\When_manipulating_excel_after_creation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

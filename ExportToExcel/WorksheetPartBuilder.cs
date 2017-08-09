@@ -9,9 +9,12 @@ namespace ExportToExcel
     {
         private readonly WorksheetPart _worksheetPart;
         private readonly OpenXmlWriter _writer;
+        private bool _buildingIsFinished;
 
         public WorksheetPartBuilder(WorksheetPart worksheetPart)
         {
+            _buildingIsFinished = false;
+
             _worksheetPart = worksheetPart;
             _writer = OpenXmlWriter.Create(_worksheetPart);
 
@@ -19,17 +22,28 @@ namespace ExportToExcel
             _writer.WriteStartElement(new SheetData());
         }
 
-        public WorksheetPart FinishBuilding()
+        public WorksheetPart FinishAndGetResult()
+        {
+            if (_buildingIsFinished == false)
+            {
+                FinishBuilding();
+            }
+            return _worksheetPart;
+        }
+
+        private void FinishBuilding()
         {
             _writer.WriteEndElement(); // end SheetData
             _writer.WriteEndElement(); // end Worksheet
             _writer.Close();
 
-            return _worksheetPart;
+            _buildingIsFinished = true;
         }
 
         public void AddRow(string[] cellValues)
         {
+            ThrowExceptionIfBuildingIsFinished();
+
             _writer.WriteStartElement(new Row());
             foreach (var cellValue in cellValues)
             {
@@ -41,6 +55,14 @@ namespace ExportToExcel
                 _writer.WriteEndElement(); // end Cell
             }
             _writer.WriteEndElement(); // end Row 
+        }
+
+        private void ThrowExceptionIfBuildingIsFinished()
+        {
+            if (_buildingIsFinished)
+            {
+                throw new InvalidOperationException("WorksheetPartBuilder has finished building and any adding is not allowed.");
+            }
         }
 
         public void Dispose()
