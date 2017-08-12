@@ -4,6 +4,7 @@ using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ExportToExcel.StylesheetProvider;
 
 namespace ExportToExcel
 {
@@ -15,13 +16,15 @@ namespace ExportToExcel
 
     public class ExcelBuilder : IExcelBuilder
     {
+        private readonly IExcelStylesheetProvider _stylesheetProvider;
         private readonly MemoryStream _memoryStream;
         private readonly SpreadsheetDocument _document;
         private readonly Dictionary<string, WorksheetPartBuilder> _worksheetPartBuilders;
         private bool _buildingIsFinished;
 
-        public ExcelBuilder()
+        public ExcelBuilder(IExcelStylesheetProvider stylesheetProvider)
         {
+            _stylesheetProvider = stylesheetProvider;
             _worksheetPartBuilders = new Dictionary<string, WorksheetPartBuilder>();
             _buildingIsFinished = false;
 
@@ -61,9 +64,20 @@ namespace ExportToExcel
 
         private void FinishBuilding()
         {
+            AddStylesheet();
             AddSheets();
             _document.Close();
             _buildingIsFinished = true;
+        }
+
+        private void AddStylesheet()
+        {
+            var stylesPart = _document.WorkbookPart.AddNewPart<WorkbookStylesPart>();
+            using (var writer = OpenXmlWriter.Create(stylesPart))
+            {
+                writer.WriteElement(_stylesheetProvider.GetStylesheet());
+                writer.Close();
+            }
         }
 
         private void AddSheets()

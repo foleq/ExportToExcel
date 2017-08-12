@@ -4,7 +4,9 @@ using System.Linq;
 using developwithpassion.specifications.rhinomocks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ExportToExcel.StylesheetProvider;
 using Machine.Specifications;
+using Rhino.Mocks;
 
 namespace ExportToExcel.Tests.ExcelBuilderSpecs
 {
@@ -12,42 +14,28 @@ namespace ExportToExcel.Tests.ExcelBuilderSpecs
     //{
     //    public void AfterContextCleanup()
     //    {
-    //        ExcelBuilderSpecs.ResultDocument.Close();
+    //        ExcelBuilderSpecs.ResultExcel.Close();
     //    }
     //}
 
     [Subject(typeof(ExcelBuilder))]
     internal abstract class ExcelBuilderSpecs : Observes<ExcelBuilder>
     {
-        //const string resultPath = "ResultDocument.xlsx";
-        private const string ResultPath = "C:\\Users\\piotr\\Desktop\\excel 2k10\\ResultDocument.xlsx";
-        protected static List<ExpectedWorksheetData> ExpectedWorksheetDataList;
-        public static SpreadsheetDocument ResultDocument;
+        //const string resultPath = "ResultExcel.xlsx";
+        private const string ResultPath = "C:\\Users\\piotr\\Desktop\\excel 2k10\\ResultExcel.xlsx";
+        private static readonly Stylesheet Stylesheet = new Stylesheet();
+
         protected static string ExpectedExceptionMessage = "WorksheetPartBuilder has finished building and any adding is not allowed.";
+        protected static List<ExpectedWorksheetData> ExpectedWorksheetDataList;
+        public static SpreadsheetDocument ResultExcel;
 
         Establish context = () =>
         {
-            ExpectedWorksheetDataList = new List<ExpectedWorksheetData>()
-            {
-                new ExpectedWorksheetData()
-                {
-                    WorksheetIndex = 0,
-                    WorksheetName = "sheet_1",
-                    Data = new List<string[]>()
-                    {
-                        new[] { "row_1_cell_A", "row_1_cell_B" },
-                        new[] { "row_2_cell_A", "row_2_cell_B" }
-                    }
-                }
-            };
+            var stylesheetProvider = depends.on<IExcelStylesheetProvider>();
+            stylesheetProvider.Stub(x => x.GetStylesheet()).Return(Stylesheet);
         };
 
-        Because of = () =>
-        {
-            ResultDocument = BuildExcel(ExpectedWorksheetDataList);
-        };
-
-        protected static SpreadsheetDocument BuildExcel(List<ExpectedWorksheetData> worksheetDataList)
+        protected static void AddDataToExcel(List<ExpectedWorksheetData> worksheetDataList)
         {
             foreach (var worksheetData in worksheetDataList)
             {
@@ -56,6 +44,10 @@ namespace ExportToExcel.Tests.ExcelBuilderSpecs
                     sut.AddRowToWorksheet(worksheetData.WorksheetName, dataRow);
                 }
             }
+        }
+
+        protected static SpreadsheetDocument FinishAndGetResultExcel()
+        {
             var bytes = sut.FinishAndGetExcel();
             sut.Dispose();
             return GetSpreadsheetDocumentFrom(bytes);
@@ -80,8 +72,8 @@ namespace ExportToExcel.Tests.ExcelBuilderSpecs
         
         protected static void Should_have_proper_worksheets()
         {
-            ResultDocument.WorkbookPart.WorksheetParts.Count().ShouldEqual(ExpectedWorksheetDataList.Count);
-            var sheets = ResultDocument.WorkbookPart.Workbook.Sheets.ChildElements.ToArray();
+            ResultExcel.WorkbookPart.WorksheetParts.Count().ShouldEqual(ExpectedWorksheetDataList.Count);
+            var sheets = ResultExcel.WorkbookPart.Workbook.Sheets.ChildElements.ToArray();
             sheets.Length.ShouldEqual(ExpectedWorksheetDataList.Count);
 
             foreach (var worksheetData in ExpectedWorksheetDataList)
@@ -111,9 +103,15 @@ namespace ExportToExcel.Tests.ExcelBuilderSpecs
             }
         }
 
+        protected static void Should_have_proper_stylesheet()
+        {
+            var resutStylesheet = ResultExcel.WorkbookPart.WorkbookStylesPart.Stylesheet;
+            resutStylesheet.OuterXml.ShouldEqual(Stylesheet.OuterXml);
+        }
+
         private static List<string[]> GetData(int worksheetIndex)
         {
-            var worksheetParts = ResultDocument.WorkbookPart.WorksheetParts.ToArray();
+            var worksheetParts = ResultExcel.WorkbookPart.WorksheetParts.ToArray();
             var worksheet = worksheetParts[worksheetIndex].Worksheet;
             var sheetData = worksheet.GetFirstChild<SheetData>();
 

@@ -23,7 +23,7 @@ namespace ExportToExcel.StylesheetProvider
         private readonly IExcelStylesheetFillProvider _fillProvider;
         private readonly IExcelStylesheetBorderProvider _borderProvider;
         private readonly Stylesheet _stylesheet;
-        private static IDictionary<ExcelSheetStyleIndex, uint> _indexes;
+        private readonly IDictionary<ExcelSheetStyleIndex, uint> _indexes;
 
         public ExcelStylesheetProvider(IExcelStylesheetNumberingFormatProvider numberingFormatProvider,
             IExcelStylesheetFontProvider fontProvider,
