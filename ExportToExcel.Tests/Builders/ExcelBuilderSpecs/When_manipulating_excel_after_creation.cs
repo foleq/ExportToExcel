@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Machine.Specifications;
 
-namespace ExportToExcel.Tests.ExcelBuilderSpecs
+namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 {
-    internal abstract class When_manipulating_excel_after_creation : ExcelBuilderSpecs
+    internal abstract class When_manipulating_excel_after_creation : Builders.ExcelBuilderSpecs.ExcelBuilderSpecs
     {
         Establish context = () =>
         {

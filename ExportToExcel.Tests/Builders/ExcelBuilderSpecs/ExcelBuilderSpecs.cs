@@ -4,11 +4,12 @@ using System.Linq;
 using developwithpassion.specifications.rhinomocks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ExportToExcel.Builders;
 using ExportToExcel.StylesheetProvider;
 using Machine.Specifications;
 using Rhino.Mocks;
 
-namespace ExportToExcel.Tests.ExcelBuilderSpecs
+namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 {
     //public class CleanExcelBuilderResult : ICleanupAfterEveryContextInAssembly
     //{
@@ -25,7 +26,7 @@ namespace ExportToExcel.Tests.ExcelBuilderSpecs
         private const string ResultPath = "C:\\Users\\piotr\\Desktop\\excel 2k10\\ResultExcel.xlsx";
         private static readonly Stylesheet Stylesheet = new Stylesheet();
 
-        protected static string ExpectedExceptionMessage = "WorksheetPartBuilder has finished building and any adding is not allowed.";
+        protected static string ExpectedExceptionMessage = "ExcelWorksheetPartBuilder has finished building and any adding is not allowed.";
         protected static List<ExpectedWorksheetData> ExpectedWorksheetDataList;
         public static SpreadsheetDocument ResultExcel;
 

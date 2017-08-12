@@ -3,15 +3,15 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace ExportToExcel
+namespace ExportToExcel.Builders
 {
-    internal class WorksheetPartBuilder : IDisposable
+    internal class ExcelWorksheetPartBuilder : IDisposable
     {
         private readonly WorksheetPart _worksheetPart;
         private readonly OpenXmlWriter _writer;
         private bool _buildingIsFinished;
 
-        public WorksheetPartBuilder(WorksheetPart worksheetPart)
+        public ExcelWorksheetPartBuilder(WorksheetPart worksheetPart)
         {
             _buildingIsFinished = false;
 
@@ -61,7 +61,7 @@ namespace ExportToExcel
         {
             if (_buildingIsFinished)
             {
-                throw new InvalidOperationException("WorksheetPartBuilder has finished building and any adding is not allowed.");
+                throw new InvalidOperationException("ExcelWorksheetPartBuilder has finished building and any adding is not allowed.");
             }
         }
 

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Machine.Specifications;
 
-namespace ExportToExcel.Tests.ExcelBuilderSpecs
+namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 {
-    internal class When_creating_excel_with_one_worksheet : ExcelBuilderSpecs
+    internal class When_creating_excel_with_one_worksheet : Builders.ExcelBuilderSpecs.ExcelBuilderSpecs
     {
         Establish context = () =>
         {
@@ -41,7 +41,7 @@ namespace ExportToExcel.Tests.ExcelBuilderSpecs
             Should_have_proper_stylesheet();
     }
 
-    internal class When_creating_excel_with_multiple_worksheets : ExcelBuilderSpecs
+    internal class When_creating_excel_with_multiple_worksheets : Builders.ExcelBuilderSpecs.ExcelBuilderSpecs
     {
         Establish context = () =>
         {

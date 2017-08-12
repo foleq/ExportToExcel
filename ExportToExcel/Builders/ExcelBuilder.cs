@@ -6,7 +6,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExportToExcel.StylesheetProvider;
 
-namespace ExportToExcel
+namespace ExportToExcel.Builders
 {
     public interface IExcelBuilder : IDisposable
     {
@@ -19,13 +19,13 @@ namespace ExportToExcel
         private readonly IExcelStylesheetProvider _stylesheetProvider;
         private readonly MemoryStream _memoryStream;
         private readonly SpreadsheetDocument _document;
-        private readonly Dictionary<string, WorksheetPartBuilder> _worksheetPartBuilders;
+        private readonly Dictionary<string, ExcelWorksheetPartBuilder> _worksheetPartBuilders;
         private bool _buildingIsFinished;
 
         public ExcelBuilder(IExcelStylesheetProvider stylesheetProvider)
         {
             _stylesheetProvider = stylesheetProvider;
-            _worksheetPartBuilders = new Dictionary<string, WorksheetPartBuilder>();
+            _worksheetPartBuilders = new Dictionary<string, ExcelWorksheetPartBuilder>();
             _buildingIsFinished = false;
 
             _memoryStream = new MemoryStream();
@@ -39,7 +39,7 @@ namespace ExportToExcel
 
             if (_worksheetPartBuilders.ContainsKey(worksheetName) == false)
             {
-                var worksheetBuilder = new WorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>());
+                var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>());
                 _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);    
             }
             _worksheetPartBuilders[worksheetName].AddRow(cellValues);
@@ -49,7 +49,7 @@ namespace ExportToExcel
         {
             if (_buildingIsFinished)
             {
-                throw new InvalidOperationException("WorksheetPartBuilder has finished building and any adding is not allowed.");
+                throw new InvalidOperationException("ExcelWorksheetPartBuilder has finished building and any adding is not allowed.");
             }
         }
 
