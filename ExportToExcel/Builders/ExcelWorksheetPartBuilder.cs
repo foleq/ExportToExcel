@@ -2,20 +2,25 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ExportToExcel.Factories;
+using ExportToExcel.Models;
 
 namespace ExportToExcel.Builders
 {
     internal class ExcelWorksheetPartBuilder : IDisposable
     {
         private readonly WorksheetPart _worksheetPart;
+        private readonly IExcelCellFactory _excelCellFactory;
         private readonly OpenXmlWriter _writer;
         private bool _buildingIsFinished;
 
-        public ExcelWorksheetPartBuilder(WorksheetPart worksheetPart)
+        public ExcelWorksheetPartBuilder(WorksheetPart worksheetPart,
+            IExcelCellFactory excelCellFactory)
         {
             _buildingIsFinished = false;
 
             _worksheetPart = worksheetPart;
+            _excelCellFactory = excelCellFactory;
             _writer = OpenXmlWriter.Create(_worksheetPart);
 
             _writer.WriteStartElement(new Worksheet());
@@ -40,19 +45,14 @@ namespace ExportToExcel.Builders
             _buildingIsFinished = true;
         }
 
-        public void AddRow(string[] cellValues)
+        public void AddRow(ExcelCell[] cells)
         {
             ThrowExceptionIfBuildingIsFinished();
 
             _writer.WriteStartElement(new Row());
-            foreach (var cellValue in cellValues)
+            foreach (var cell in cells)
             {
-                _writer.WriteStartElement(new Cell()
-                {
-                    DataType = CellValues.String,
-                });
-                _writer.WriteElement(new CellValue(cellValue));
-                _writer.WriteEndElement(); // end Cell
+                _writer.WriteElement(_excelCellFactory.GetCell(cell));
             }
             _writer.WriteEndElement(); // end Row 
         }

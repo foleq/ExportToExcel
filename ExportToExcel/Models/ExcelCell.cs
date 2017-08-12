@@ -7,7 +7,7 @@ namespace ExportToExcel.Models
         public string Value { get; set; }
         public ExcelSheetStyleIndex StyleIndex { get; set; }
 
-        public ExcelCell(string value, ExcelSheetStyleIndex styleIndex)
+        public ExcelCell(string value, ExcelSheetStyleIndex styleIndex = ExcelSheetStyleIndex.Default)
         {
             Value = value;
             StyleIndex = styleIndex;

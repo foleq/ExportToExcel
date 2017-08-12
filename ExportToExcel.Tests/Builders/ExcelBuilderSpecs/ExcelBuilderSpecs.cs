@@ -5,6 +5,8 @@ using developwithpassion.specifications.rhinomocks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExportToExcel.Builders;
+using ExportToExcel.Factories;
+using ExportToExcel.Models;
 using ExportToExcel.StylesheetProvider;
 using Machine.Specifications;
 using Rhino.Mocks;
@@ -24,7 +26,12 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
     {
         //const string resultPath = "ResultExcel.xlsx";
         private const string ResultPath = "C:\\Users\\piotr\\Desktop\\excel 2k10\\ResultExcel.xlsx";
-        private static readonly Stylesheet Stylesheet = new Stylesheet();
+        private static readonly Stylesheet Stylesheet = new ExcelStylesheetProvider(
+                new ExcelStylesheetNumberingFormatProvider(),
+                new ExcelStylesheetFontProvider(),
+                new ExcelStylesheetFillProvider(),
+                new ExcelStylesheetBorderProvider())
+            .GetStylesheet();
 
         protected static string ExpectedExceptionMessage = "ExcelWorksheetPartBuilder has finished building and any adding is not allowed.";
         protected static List<ExpectedWorksheetData> ExpectedWorksheetDataList;
@@ -34,6 +41,26 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
         {
             var stylesheetProvider = depends.on<IExcelStylesheetProvider>();
             stylesheetProvider.Stub(x => x.GetStylesheet()).Return(Stylesheet);
+
+            var excelCellFactory = depends.on<IExcelCellFactory>();
+            excelCellFactory.Stub(x => x.GetCell(null))
+                .IgnoreArguments()
+                .WhenCalled(c =>
+                {
+                    var excelCell = (ExcelCell) c.Arguments[0];
+                    var returnValue = new Cell();
+                    if (string.IsNullOrEmpty(excelCell?.Value) == false)
+                    {
+                        returnValue = new Cell()
+                        {
+                            CellValue = new CellValue(excelCell.Value),
+                            StyleIndex = (uint) excelCell.StyleIndex,
+                            DataType = excelCell.StyleIndex == ExcelSheetStyleIndex.Number ? CellValues.Number : CellValues.String
+                        };
+                    }
+                    c.ReturnValue = returnValue;
+                })
+                .Return(null);
         };
 
         protected static void AddDataToExcel(List<ExpectedWorksheetData> worksheetDataList)
@@ -98,7 +125,8 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                     data[i].Length.ShouldEqual(expectedData[i].Length);
                     for (var j = 0; j < data[i].Length; j++)
                     {
-                        data[i][j].ShouldEqual(expectedData[i][j]);
+                        data[i][j].Value.ShouldEqual(expectedData[i][j].Value);
+                        data[i][j].StyleIndex.ShouldEqual(expectedData[i][j].StyleIndex);
                     }
                 }
             }
@@ -110,7 +138,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             resutStylesheet.OuterXml.ShouldEqual(Stylesheet.OuterXml);
         }
 
-        private static List<string[]> GetData(int worksheetIndex)
+        private static List<ExcelCell[]> GetData(int worksheetIndex)
         {
             var worksheetParts = ResultExcel.WorkbookPart.WorksheetParts.ToArray();
             var worksheet = worksheetParts[worksheetIndex].Worksheet;
@@ -118,7 +146,14 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 
             var data = sheetData.Elements<Row>().Select(row =>
             {
-                return row.Elements<Cell>().Select(x => x.InnerText).ToArray();
+                return row.Elements<Cell>().Select(x =>
+                    {
+                        var styleIndex = x.StyleIndex != null && x.StyleIndex.HasValue
+                            ? (ExcelSheetStyleIndex) (int) x.StyleIndex.Value
+                            : ExcelSheetStyleIndex.Default;
+                        return new ExcelCell(x.InnerText, styleIndex);
+                    })
+                    .ToArray();
             });
             return data.ToList();
         }
@@ -127,7 +162,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
         {
             public int WorksheetIndex { get; set; }
             public string WorksheetName { get; set; }
-            public List<string[]> Data { get; set; }
+            public List<ExcelCell[]> Data { get; set; }
         }
     }
 }

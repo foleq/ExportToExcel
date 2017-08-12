@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ExportToExcel.Models;
 using Machine.Specifications;
 
 namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
@@ -14,10 +15,18 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 {
                     WorksheetIndex = 0,
                     WorksheetName = "sheet_1",
-                    Data = new List<string[]>()
+                    Data = new List<ExcelCell[]>()
                     {
-                        new[] { "row_1_cell_A", "row_1_cell_B" },
-                        new[] { "row_2_cell_A", "row_2_cell_B" }
+                        new[]
+                        {
+                            new ExcelCell("row_1_cell_A"),
+                            new ExcelCell("row_1_cell_B"),
+                        },
+                        new[]
+                        {
+                            new ExcelCell("row_2_cell_A"),
+                            new ExcelCell("row_2_cell_B")
+                        }
                     }
                 }
             };
@@ -52,7 +61,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 
         Because of = () =>
         {
-            _exception = Catch.Exception(() => sut.AddRowToWorksheet("sheet_1", new[] { "cell" }));
+            _exception = Catch.Exception(() => sut.AddRowToWorksheet("sheet_1", new[] { new ExcelCell("cell") }));
         };
 
         It should_be_an_InvalidOperationException = () =>
@@ -68,7 +77,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 
         Because of = () =>
         {
-            _exception = Catch.Exception(() => sut.AddRowToWorksheet("sheet_not_existing", new[] { "cell" }));
+            _exception = Catch.Exception(() => sut.AddRowToWorksheet("sheet_not_existing", new[] { new ExcelCell("cell") }));
         };
 
         It should_be_an_InvalidOperationException = () =>

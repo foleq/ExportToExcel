@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using ExportToExcel.Models;
+using ExportToExcel.StylesheetProvider;
 using Machine.Specifications;
 
 namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
@@ -13,10 +15,18 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 {
                     WorksheetIndex = 0,
                     WorksheetName = "sheet_1",
-                    Data = new List<string[]>()
+                    Data = new List<ExcelCell[]>()
                     {
-                        new[] { "row_1_cell_A", "row_1_cell_B" },
-                        new[] { "row_2_cell_A", "row_2_cell_B" }
+                        new[]
+                        {
+                            new ExcelCell("row_1_cell_A", ExcelSheetStyleIndex.Bold),
+                            new ExcelCell("2345678.99", ExcelSheetStyleIndex.Number),
+                        },
+                        new[] 
+                        {
+                            new ExcelCell("row_2_cell_A"),
+                            new ExcelCell("row_2_cell_B")
+                        }
                     }
                 }
             };
@@ -51,22 +61,44 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 {
                     WorksheetIndex = 0,
                     WorksheetName = "sheet_1",
-                    Data = new List<string[]>()
+                    Data = new List<ExcelCell[]>()
                     {
-                        new[] { "row_1_cell_A", "row_1_cell_B" },
-                        new[] { "row_2_cell_A", "row_2_cell_B" }
+                        new[]
+                        {
+                            new ExcelCell("row_1_cell_A"),
+                            new ExcelCell("row_1_cell_B"),
+                        },
+                        new[]
+                        {
+                            new ExcelCell("row_2_cell_A"),
+                            new ExcelCell("row_2_cell_B")
+                        }
                     }
                 },
                 new ExpectedWorksheetData()
                 {
                     WorksheetIndex = 1,
                     WorksheetName = "sheet_2",
-                    Data = new List<string[]>()
+                    Data = new List<ExcelCell[]>()
                     {
-                        new[] { "row_1_cell_A", "row_1_cell_B" },
-                        new string[0],
-                        new[] { "", "row_3_cell_A", "row_3_cell_B", "row_3_cell_C" },
-                        new[] { "row_4_cell_A", "row_4_cell_B" }
+                        new[]
+                        {
+                            new ExcelCell("row_1_cell_A"),
+                            new ExcelCell("row_1_cell_B"),
+                        },
+                        new ExcelCell[0],
+                        new[]
+                        {
+                            new ExcelCell(""),
+                            new ExcelCell("row_3_cell_B"),
+                            new ExcelCell("row_3_cell_C"),
+                            new ExcelCell("row_3_cell_D"),
+                        },
+                        new[]
+                        {
+                            new ExcelCell("row_4_cell_A"),
+                            new ExcelCell("row_4_cell_B")
+                        }
                     }
                 }
             };

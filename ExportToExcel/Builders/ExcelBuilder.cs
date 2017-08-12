@@ -4,27 +4,32 @@ using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ExportToExcel.Factories;
+using ExportToExcel.Models;
 using ExportToExcel.StylesheetProvider;
 
 namespace ExportToExcel.Builders
 {
     public interface IExcelBuilder : IDisposable
     {
-        void AddRowToWorksheet(string worksheetName, string[] cellValues);
+        void AddRowToWorksheet(string worksheetName, ExcelCell[] cells);
         byte[] FinishAndGetExcel();
     }
 
     public class ExcelBuilder : IExcelBuilder
     {
         private readonly IExcelStylesheetProvider _stylesheetProvider;
+        private readonly IExcelCellFactory _excelCellFactory;
         private readonly MemoryStream _memoryStream;
         private readonly SpreadsheetDocument _document;
         private readonly Dictionary<string, ExcelWorksheetPartBuilder> _worksheetPartBuilders;
         private bool _buildingIsFinished;
 
-        public ExcelBuilder(IExcelStylesheetProvider stylesheetProvider)
+        public ExcelBuilder(IExcelStylesheetProvider stylesheetProvider,
+            IExcelCellFactory excelCellFactory)
         {
             _stylesheetProvider = stylesheetProvider;
+            _excelCellFactory = excelCellFactory;
             _worksheetPartBuilders = new Dictionary<string, ExcelWorksheetPartBuilder>();
             _buildingIsFinished = false;
 
@@ -33,16 +38,16 @@ namespace ExportToExcel.Builders
             _document.AddWorkbookPart();
         }
 
-        public void AddRowToWorksheet(string worksheetName, string[] cellValues)
+        public void AddRowToWorksheet(string worksheetName, ExcelCell[] cells)
         {
             ThrowExceptionIfBuildingIsFinished();
 
             if (_worksheetPartBuilders.ContainsKey(worksheetName) == false)
             {
-                var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>());
-                _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);    
+                var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>(), _excelCellFactory);
+                _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);
             }
-            _worksheetPartBuilders[worksheetName].AddRow(cellValues);
+            _worksheetPartBuilders[worksheetName].AddRow(cells);
         }
 
         private void ThrowExceptionIfBuildingIsFinished()
