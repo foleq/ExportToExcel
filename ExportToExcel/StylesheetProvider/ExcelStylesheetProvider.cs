@@ -7,7 +7,7 @@ namespace ExportToExcel.StylesheetProvider
     {
         Default,
         Bold,
-        Number,
+        Nformat4Decimal,
     }
 
     public interface IExcelStylesheetProvider
@@ -75,7 +75,7 @@ namespace ExportToExcel.StylesheetProvider
                 NumberFormatId = _numberingFormatProvider.GetNumberFormatIndex(ExcelSheetNumberingFormatIndex.Nformat4Decimal),
                 ApplyNumberFormat = true
             };
-            AppendWithIndexSave(cellformats, numberCellFromat, ExcelSheetStyleIndex.Number);
+            AppendWithIndexSave(cellformats, numberCellFromat, ExcelSheetStyleIndex.Nformat4Decimal);
 
             return cellformats;
         }

@@ -102,7 +102,7 @@ namespace ExportToExcel.Tests.StylesheetProvider
 
     internal class When_getting_number_stylesheet_index : ExcelStylesheetProviderSpecs
     {
-        Because of = () => _resultIndex = sut.GetSheetStyleIndex(ExcelSheetStyleIndex.Number);
+        Because of = () => _resultIndex = sut.GetSheetStyleIndex(ExcelSheetStyleIndex.Nformat4Decimal);
 
         It should_return_proper_index = () => _resultIndex.ShouldEqual<uint>(2);
 

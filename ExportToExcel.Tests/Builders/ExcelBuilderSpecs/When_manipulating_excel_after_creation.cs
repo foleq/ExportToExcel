@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using DocumentFormat.OpenXml.Spreadsheet;
 using ExportToExcel.Models;
 using Machine.Specifications;
 
 namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 {
-    internal abstract class When_manipulating_excel_after_creation : Builders.ExcelBuilderSpecs.ExcelBuilderSpecs
+    internal abstract class When_manipulating_excel_after_creation : ExcelBuilderSpecs
     {
         Establish context = () =>
         {
@@ -105,5 +106,8 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 
         It should_have_proper_stylesheet = () =>
             Should_have_proper_stylesheet();
+
+        It should_have_proper_columns_for_worksheets = () =>
+            Should_have_proper_columns_for_worksheets(new Column[0]);
     }
 }

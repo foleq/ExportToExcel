@@ -52,7 +52,7 @@ namespace ExportToExcel.Factories
 
         private static bool IsNumericType(ExcelSheetStyleIndex styleIndex)
         {
-            return styleIndex == ExcelSheetStyleIndex.Number;
+            return styleIndex == ExcelSheetStyleIndex.Nformat4Decimal;
         }
     }
 }

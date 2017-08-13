@@ -55,7 +55,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                         {
                             CellValue = new CellValue(excelCell.Value),
                             StyleIndex = (uint) excelCell.StyleIndex,
-                            DataType = excelCell.StyleIndex == ExcelSheetStyleIndex.Number ? CellValues.Number : CellValues.String
+                            DataType = excelCell.StyleIndex == ExcelSheetStyleIndex.Nformat4Decimal ? CellValues.Number : CellValues.String
                         };
                     }
                     c.ReturnValue = returnValue;
@@ -125,17 +125,11 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                     data[i].Length.ShouldEqual(expectedData[i].Length);
                     for (var j = 0; j < data[i].Length; j++)
                     {
-                        data[i][j].Value.ShouldEqual(expectedData[i][j].Value);
+                        data[i][j].Value.ShouldEqual(expectedData[i][j].Value ?? "");
                         data[i][j].StyleIndex.ShouldEqual(expectedData[i][j].StyleIndex);
                     }
                 }
             }
-        }
-
-        protected static void Should_have_proper_stylesheet()
-        {
-            var resutStylesheet = ResultExcel.WorkbookPart.WorkbookStylesPart.Stylesheet;
-            resutStylesheet.OuterXml.ShouldEqual(Stylesheet.OuterXml);
         }
 
         private static List<ExcelCell[]> GetData(int worksheetIndex)
@@ -149,13 +143,47 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 return row.Elements<Cell>().Select(x =>
                     {
                         var styleIndex = x.StyleIndex != null && x.StyleIndex.HasValue
-                            ? (ExcelSheetStyleIndex) (int) x.StyleIndex.Value
+                            ? (ExcelSheetStyleIndex)(int)x.StyleIndex.Value
                             : ExcelSheetStyleIndex.Default;
                         return new ExcelCell(x.InnerText, styleIndex);
                     })
                     .ToArray();
             });
             return data.ToList();
+        }
+
+        protected static void Should_have_proper_stylesheet()
+        {
+            var resutStylesheet = ResultExcel.WorkbookPart.WorkbookStylesPart.Stylesheet;
+            resutStylesheet.OuterXml.ShouldEqual(Stylesheet.OuterXml);
+        }
+
+        protected static void Should_have_proper_columns_for_worksheets(Column[] expectedColumns)
+        {
+            foreach (var expectedWorksheetData in ExpectedWorksheetDataList)
+            {
+                var columns = GetColumns(expectedWorksheetData.WorksheetIndex);
+
+                columns.Length.ShouldEqual(expectedColumns.Length);
+
+                for (var i = 0; i < columns.Length; i++)
+                {
+                    columns[i].BestFit.Value.ShouldBeTrue();
+                    columns[i].Min.Value.ShouldEqual(expectedColumns[i].Min.Value);
+                    columns[i].Max.Value.ShouldEqual(expectedColumns[i].Max.Value);
+                    columns[i].CustomWidth.Value.ShouldBeTrue();
+                    columns[i].Width.Value.ShouldBeGreaterThan(0);
+                }
+            }
+        }
+
+        private static Column[] GetColumns(int worksheetIndex)
+        {
+            var worksheetParts = ResultExcel.WorkbookPart.WorksheetParts.ToArray();
+            var worksheet = worksheetParts[worksheetIndex].Worksheet;
+            var columns = worksheet.GetFirstChild<Columns>();
+
+            return columns.Elements<Column>().ToArray();
         }
 
         protected class ExpectedWorksheetData
