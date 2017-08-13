@@ -109,5 +109,8 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 
         It should_have_proper_columns_for_worksheets = () =>
             Should_have_proper_columns_for_worksheets(new Column[0]);
+
+        It should_have_drawing_part_if_image_added = () =>
+            Should_have_drawing_part_if_image_added();
     }
 }

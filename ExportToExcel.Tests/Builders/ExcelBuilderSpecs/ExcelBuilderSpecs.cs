@@ -24,8 +24,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
     [Subject(typeof(ExcelBuilder))]
     internal abstract class ExcelBuilderSpecs : Observes<ExcelBuilder>
     {
-        //const string resultPath = "ResultExcel.xlsx";
-        private const string ResultPath = "C:\\Users\\piotr\\Desktop\\excel 2k10\\ResultExcel.xlsx";
+        private const string ResultPath = "ResultExcel.xlsx";
         private static readonly Stylesheet Stylesheet = new ExcelStylesheetProvider(
                 new ExcelStylesheetNumberingFormatProvider(),
                 new ExcelStylesheetFontProvider(),
@@ -71,7 +70,14 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 {
                     sut.AddRowToWorksheet(worksheetData.WorksheetName, dataRow);
                 }
+                sut.WithImage(worksheetData.WorksheetName, worksheetData.Image);
             }
+        }
+
+        protected static ExcelImage GetImage(string imagePath, ImagePartType type, int colNumber = 1, int rowNumber = 1)
+        {
+            var imageBytes = File.Exists(imagePath) ? File.ReadAllBytes(imagePath) : null;
+            return new ExcelImage(imageBytes, type, colNumber, rowNumber);
         }
 
         protected static SpreadsheetDocument FinishAndGetResultExcel()
@@ -125,8 +131,13 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                     data[i].Length.ShouldEqual(expectedData[i].Length);
                     for (var j = 0; j < data[i].Length; j++)
                     {
-                        data[i][j].Value.ShouldEqual(expectedData[i][j].Value ?? "");
-                        data[i][j].StyleIndex.ShouldEqual(expectedData[i][j].StyleIndex);
+                        var expectedValue = expectedData[i][j] != null && expectedData[i][j].Value != null
+                            ? expectedData[i][j].Value : "";
+                        data[i][j].Value.ShouldEqual(expectedValue);
+
+                        var expectedStyleIndex = expectedData[i][j] != null
+                            ? expectedData[i][j].StyleIndex : ExcelSheetStyleIndex.Default;
+                        data[i][j].StyleIndex.ShouldEqual(expectedStyleIndex);
                     }
                 }
             }
@@ -186,11 +197,30 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             return columns.Elements<Column>().ToArray();
         }
 
+        protected static void Should_have_drawing_part_if_image_added()
+        {
+            var worksheetParts = ResultExcel.WorkbookPart.WorksheetParts.ToArray();
+
+            foreach (var expectedWorksheetData in ExpectedWorksheetDataList)
+            {
+                var drawingsPart = worksheetParts[expectedWorksheetData.WorksheetIndex].DrawingsPart;
+                if (expectedWorksheetData.Image?.ImageBytes != null)
+                {
+                    drawingsPart.ShouldNotBeNull();
+                }
+                else
+                {
+                    drawingsPart.ShouldBeNull();
+                }
+            }
+        }
+
         protected class ExpectedWorksheetData
         {
             public int WorksheetIndex { get; set; }
             public string WorksheetName { get; set; }
             public List<ExcelCell[]> Data { get; set; }
+            public ExcelImage Image { get; set; }
         }
     }
 }

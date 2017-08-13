@@ -35,6 +35,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -47,6 +48,7 @@
     <Compile Include="Builders\ExcelBuilder.cs" />
     <Compile Include="Factories\ExcelCellFactory.cs" />
     <Compile Include="Models\ExcelCell.cs" />
+    <Compile Include="Models\ExcelImage.cs" />
     <Compile Include="StylesheetProvider\ExcelStylesheetProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StylesheetProvider\ExcelStylesheetBorderProvider.cs" />

@@ -13,6 +13,7 @@ namespace ExportToExcel.Builders
     public interface IExcelBuilder : IDisposable
     {
         void AddRowToWorksheet(string worksheetName, ExcelCell[] cells);
+        void WithImage(string worksheetName, ExcelImage excelImage);
         byte[] FinishAndGetExcel();
     }
 
@@ -42,12 +43,14 @@ namespace ExportToExcel.Builders
         {
             ThrowExceptionIfBuildingIsFinished();
 
-            if (_worksheetPartBuilders.ContainsKey(worksheetName) == false)
-            {
-                var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>(), _excelCellFactory);
-                _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);
-            }
+            CreateWorksheetPartBuilderIfNotExist(worksheetName);
             _worksheetPartBuilders[worksheetName].AddRow(cells);
+        }
+
+        public void WithImage(string worksheetName, ExcelImage excelImage)
+        {
+            CreateWorksheetPartBuilderIfNotExist(worksheetName);
+            _worksheetPartBuilders[worksheetName].SetExcelImage(excelImage);
         }
 
         private void ThrowExceptionIfBuildingIsFinished()
@@ -56,6 +59,16 @@ namespace ExportToExcel.Builders
             {
                 throw new InvalidOperationException("ExcelWorksheetPartBuilder has finished building and any adding is not allowed.");
             }
+        }
+
+        private void CreateWorksheetPartBuilderIfNotExist(string worksheetName)
+        {
+            if (_worksheetPartBuilders.ContainsKey(worksheetName))
+            {
+                return;
+            }
+            var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>(), _excelCellFactory);
+            _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);
         }
 
         public byte[] FinishAndGetExcel()
