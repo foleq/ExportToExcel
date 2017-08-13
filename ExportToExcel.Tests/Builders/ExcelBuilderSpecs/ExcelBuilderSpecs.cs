@@ -207,9 +207,11 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             foreach (var expectedWorksheetData in ExpectedWorksheetDataList)
             {
                 var drawingsPart = worksheetParts[expectedWorksheetData.WorksheetIndex].DrawingsPart;
-                if (expectedWorksheetData.Images.Any(x => x?.ImageBytes != null))
+                var expectedImages = expectedWorksheetData.Images.Where(x => x?.ImageBytes != null).ToList();
+                if (expectedImages.Any())
                 {
                     drawingsPart.ShouldNotBeNull();
+                    drawingsPart.ImageParts.Count().ShouldEqual(expectedImages.Count);
                 }
                 else
                 {

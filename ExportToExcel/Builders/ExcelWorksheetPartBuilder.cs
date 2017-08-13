@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExportToExcel.Factories;
 using ExportToExcel.Models;
-using DocumentFormat.OpenXml.Drawing.Spreadsheet;
 using Drawing = DocumentFormat.OpenXml.Spreadsheet.Drawing;
-using Xdr = DocumentFormat.OpenXml.Drawing.Spreadsheet;
-using OpenXmlDrawing = DocumentFormat.OpenXml.Drawing;
 
 namespace ExportToExcel.Builders
 {
@@ -88,82 +82,8 @@ namespace ExportToExcel.Builders
 
         private Drawing GetDrawing()
         {
-            var drawingsPart = _worksheetPart.AddNewPart<DrawingsPart>();
-            var worksheetDrawing = new WorksheetDrawing();
-
-            var oneCellAnchors = new List<OneCellAnchor>();
-
-            foreach (var excelImage in _excelImages)
-            {
-                var imagePart = drawingsPart.AddImagePart(excelImage.Type);
-
-                using (var stream = new MemoryStream(excelImage.ImageBytes))
-                {
-                    imagePart.FeedData(stream);
-                }
-                long extentsCx, extentsCy;
-                using (var stream = new MemoryStream(excelImage.ImageBytes))
-                {
-                    var bm = new Bitmap(stream);
-                    extentsCx = (long)bm.Width * (long)((float)914400 / bm.HorizontalResolution);
-                    extentsCy = (long)bm.Height * (long)((float)914400 / bm.VerticalResolution);
-                    bm.Dispose();
-                }
-
-                const int colOffset = 0;
-                const int rowOffset = 0;
-
-                var nvps = worksheetDrawing.Descendants<NonVisualDrawingProperties>();
-                var nvpId = nvps.Any() ?
-                    (UInt32Value)worksheetDrawing.Descendants<NonVisualDrawingProperties>().Max(p => p.Id.Value) + 1 :
-                    1U;
-
-                var oneCellAnchor = new OneCellAnchor(
-                    new Xdr.FromMarker
-                    {
-                        ColumnId = new ColumnId((excelImage.ColNumber - 1).ToString()),
-                        RowId = new RowId((excelImage.RowNumber - 1).ToString()),
-                        ColumnOffset = new ColumnOffset(colOffset.ToString()),
-                        RowOffset = new RowOffset(rowOffset.ToString())
-                    },
-                    new Extent { Cx = extentsCx, Cy = extentsCy },
-                    new Xdr.Picture(
-                        new NonVisualPictureProperties(
-                            new NonVisualDrawingProperties { Id = nvpId, Name = "Picture " + nvpId },
-                            new NonVisualPictureDrawingProperties(new OpenXmlDrawing.PictureLocks { NoChangeAspect = true })
-                        ),
-                        new BlipFill(
-                            new OpenXmlDrawing.Blip { Embed = drawingsPart.GetIdOfPart(imagePart), CompressionState = OpenXmlDrawing.BlipCompressionValues.Print },
-                            new OpenXmlDrawing.Stretch(new OpenXmlDrawing.FillRectangle())
-                        ),
-                        new ShapeProperties(
-                            new OpenXmlDrawing.Transform2D(
-                                new OpenXmlDrawing.Offset { X = 0, Y = 0 },
-                                new OpenXmlDrawing.Extents { Cx = extentsCx, Cy = extentsCy }
-                            ),
-                            new OpenXmlDrawing.PresetGeometry { Preset = OpenXmlDrawing.ShapeTypeValues.Rectangle }
-                        )
-                    ),
-                    new ClientData()
-                );
-                oneCellAnchors.Add(oneCellAnchor);
-            }
-            
-            using (var drawingsPartWriter = OpenXmlWriter.Create(drawingsPart))
-            {
-                drawingsPartWriter.WriteStartElement(worksheetDrawing);
-                foreach (var oneCellAnchor in oneCellAnchors)
-                {
-                    drawingsPartWriter.WriteElement(oneCellAnchor);
-
-                }
-                drawingsPartWriter.WriteEndElement();
-                drawingsPartWriter.Close();
-            }
-            return new Drawing
-            {
-                Id = _worksheetPart.GetIdOfPart(drawingsPart)
-            };
+            var drawingsPartBuilder = new ExcelDrawingsPartBuilder();
+            return drawingsPartBuilder.BuildDrawing(_worksheetPart, _excelImages);
         }
 
         public void AddRow(ExcelCell[] cells)

@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builders\ExcelBuilder.cs" />
+    <Compile Include="Builders\ExcelDrawingsPartBuilder.cs" />
     <Compile Include="Factories\ExcelCellFactory.cs" />
     <Compile Include="Models\ExcelCell.cs" />
     <Compile Include="Models\ExcelImage.cs" />
