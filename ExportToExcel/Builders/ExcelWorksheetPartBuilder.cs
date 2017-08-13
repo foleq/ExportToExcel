@@ -22,13 +22,14 @@ namespace ExportToExcel.Builders
         private readonly OpenXmlWriter _writer;
 
         private readonly Dictionary<int, int> _maxNumberOfCharactersInColumns;
-        private ExcelImage _excelImage;
+        private readonly List<ExcelImage> _excelImages;
         private bool _buildingIsFinished;
 
         public ExcelWorksheetPartBuilder(WorksheetPart worksheetPart,
             IExcelCellFactory excelCellFactory)
         {
             _maxNumberOfCharactersInColumns = new Dictionary<int, int>();
+            _excelImages = new List<ExcelImage>();
             _buildingIsFinished = false;
 
             _worksheetPart = worksheetPart;
@@ -52,7 +53,7 @@ namespace ExportToExcel.Builders
         {
             _writer.WriteEndElement(); // end SheetData
             _writer.WriteElement(GetColumns());
-            if (_excelImage?.ImageBytes != null)
+            if (_excelImages.Count > 0)
             {
                 _writer.WriteElement(GetDrawing());
             }
@@ -90,61 +91,72 @@ namespace ExportToExcel.Builders
             var drawingsPart = _worksheetPart.AddNewPart<DrawingsPart>();
             var worksheetDrawing = new WorksheetDrawing();
 
-            var imagePart = drawingsPart.AddImagePart(_excelImage.Type);
+            var oneCellAnchors = new List<OneCellAnchor>();
 
-            using (var stream = new MemoryStream(_excelImage.ImageBytes))
+            foreach (var excelImage in _excelImages)
             {
-                imagePart.FeedData(stream);
-            }
-            long extentsCx, extentsCy;
-            using (var stream = new MemoryStream(_excelImage.ImageBytes))
-            {
-                var bm = new Bitmap(stream);
-                extentsCx = (long)bm.Width * (long)((float)914400 / bm.HorizontalResolution);
-                extentsCy = (long)bm.Height * (long)((float)914400 / bm.VerticalResolution);
-                bm.Dispose();
-            }
+                var imagePart = drawingsPart.AddImagePart(excelImage.Type);
 
-            const int colOffset = 0;
-            const int rowOffset = 0;
-
-            var nvps = worksheetDrawing.Descendants<NonVisualDrawingProperties>();
-            var nvpId = nvps.Any() ?
-                (UInt32Value)worksheetDrawing.Descendants<NonVisualDrawingProperties>().Max(p => p.Id.Value) + 1 :
-                1U;
-
-            var oneCellAnchor = new OneCellAnchor(
-                new Xdr.FromMarker
+                using (var stream = new MemoryStream(excelImage.ImageBytes))
                 {
-                    ColumnId = new ColumnId((_excelImage.ColNumber - 1).ToString()),
-                    RowId = new RowId((_excelImage.RowNumber - 1).ToString()),
-                    ColumnOffset = new ColumnOffset(colOffset.ToString()),
-                    RowOffset = new RowOffset(rowOffset.ToString())
-                },
-                new Extent { Cx = extentsCx, Cy = extentsCy },
-                new Xdr.Picture(
-                    new NonVisualPictureProperties(
-                        new NonVisualDrawingProperties { Id = nvpId, Name = "Picture " + nvpId },
-                        new NonVisualPictureDrawingProperties(new OpenXmlDrawing.PictureLocks { NoChangeAspect = true })
-                    ),
-                    new BlipFill(
-                        new OpenXmlDrawing.Blip { Embed = drawingsPart.GetIdOfPart(imagePart), CompressionState = OpenXmlDrawing.BlipCompressionValues.Print },
-                        new OpenXmlDrawing.Stretch(new OpenXmlDrawing.FillRectangle())
-                    ),
-                    new ShapeProperties(
-                        new OpenXmlDrawing.Transform2D(
-                            new OpenXmlDrawing.Offset { X = 0, Y = 0 },
-                            new OpenXmlDrawing.Extents { Cx = extentsCx, Cy = extentsCy }
+                    imagePart.FeedData(stream);
+                }
+                long extentsCx, extentsCy;
+                using (var stream = new MemoryStream(excelImage.ImageBytes))
+                {
+                    var bm = new Bitmap(stream);
+                    extentsCx = (long)bm.Width * (long)((float)914400 / bm.HorizontalResolution);
+                    extentsCy = (long)bm.Height * (long)((float)914400 / bm.VerticalResolution);
+                    bm.Dispose();
+                }
+
+                const int colOffset = 0;
+                const int rowOffset = 0;
+
+                var nvps = worksheetDrawing.Descendants<NonVisualDrawingProperties>();
+                var nvpId = nvps.Any() ?
+                    (UInt32Value)worksheetDrawing.Descendants<NonVisualDrawingProperties>().Max(p => p.Id.Value) + 1 :
+                    1U;
+
+                var oneCellAnchor = new OneCellAnchor(
+                    new Xdr.FromMarker
+                    {
+                        ColumnId = new ColumnId((excelImage.ColNumber - 1).ToString()),
+                        RowId = new RowId((excelImage.RowNumber - 1).ToString()),
+                        ColumnOffset = new ColumnOffset(colOffset.ToString()),
+                        RowOffset = new RowOffset(rowOffset.ToString())
+                    },
+                    new Extent { Cx = extentsCx, Cy = extentsCy },
+                    new Xdr.Picture(
+                        new NonVisualPictureProperties(
+                            new NonVisualDrawingProperties { Id = nvpId, Name = "Picture " + nvpId },
+                            new NonVisualPictureDrawingProperties(new OpenXmlDrawing.PictureLocks { NoChangeAspect = true })
                         ),
-                        new OpenXmlDrawing.PresetGeometry { Preset = OpenXmlDrawing.ShapeTypeValues.Rectangle }
-                    )
-                ),
-                new ClientData()
-            );
+                        new BlipFill(
+                            new OpenXmlDrawing.Blip { Embed = drawingsPart.GetIdOfPart(imagePart), CompressionState = OpenXmlDrawing.BlipCompressionValues.Print },
+                            new OpenXmlDrawing.Stretch(new OpenXmlDrawing.FillRectangle())
+                        ),
+                        new ShapeProperties(
+                            new OpenXmlDrawing.Transform2D(
+                                new OpenXmlDrawing.Offset { X = 0, Y = 0 },
+                                new OpenXmlDrawing.Extents { Cx = extentsCx, Cy = extentsCy }
+                            ),
+                            new OpenXmlDrawing.PresetGeometry { Preset = OpenXmlDrawing.ShapeTypeValues.Rectangle }
+                        )
+                    ),
+                    new ClientData()
+                );
+                oneCellAnchors.Add(oneCellAnchor);
+            }
+            
             using (var drawingsPartWriter = OpenXmlWriter.Create(drawingsPart))
             {
                 drawingsPartWriter.WriteStartElement(worksheetDrawing);
-                drawingsPartWriter.WriteElement(oneCellAnchor);
+                foreach (var oneCellAnchor in oneCellAnchors)
+                {
+                    drawingsPartWriter.WriteElement(oneCellAnchor);
+
+                }
                 drawingsPartWriter.WriteEndElement();
                 drawingsPartWriter.Close();
             }
@@ -202,9 +214,12 @@ namespace ExportToExcel.Builders
             }
         }
 
-        public void SetExcelImage(ExcelImage excelImage)
+        public void AddExcelImage(ExcelImage excelImage)
         {
-            _excelImage = excelImage;
+            if (excelImage?.ImageBytes != null)
+            {
+                _excelImages.Add(excelImage);
+            }
         }
 
         public void Dispose()

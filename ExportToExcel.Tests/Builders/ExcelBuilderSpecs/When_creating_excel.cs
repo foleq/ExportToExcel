@@ -222,21 +222,32 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                             new ExcelCell("row_6_cell_C")
                         }
                     },
-                    Image = GetImage("Images/logo.png", ImagePartType.Png)
+                    Images = new List<ExcelImage>
+                    {
+                        GetImage("Images/logo.png", ImagePartType.Png)
+                    }
                 },
                 new ExpectedWorksheetData()
                 {
                     WorksheetIndex = 1,
                     WorksheetName = "sheet_2",
                     Data = new List<ExcelCell[]>(),
-                    Image = GetImage("wrongpath", ImagePartType.Png)
+                    Images = new List<ExcelImage>
+                    {
+                        GetImage("Images/logo.png", ImagePartType.Png),
+                        GetImage("wrongpath", ImagePartType.Png),
+                        GetImage("Images/logo.jpg", ImagePartType.Jpeg, 4, 4)
+                    }
                 },
                 new ExpectedWorksheetData()
                 {
                     WorksheetIndex = 2,
                     WorksheetName = "sheet_3",
                     Data = new List<ExcelCell[]>(),
-                    Image = GetImage("Images/logo.jpg", ImagePartType.Jpeg, 2, 2)
+                    Images = new List<ExcelImage>
+                    {
+                        GetImage("Images/logo.jpg", ImagePartType.Jpeg, 2, 2)
+                    }
                 },
                 new ExpectedWorksheetData()
                 {
@@ -278,5 +289,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
 
         It should_have_drawing_part_if_image_added = () =>
             Should_have_drawing_part_if_image_added();
+
+        public Establish Context { get => context; set => context = value; }
     }
 }

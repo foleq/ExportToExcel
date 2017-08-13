@@ -70,7 +70,10 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 {
                     sut.AddRowToWorksheet(worksheetData.WorksheetName, dataRow);
                 }
-                sut.WithImage(worksheetData.WorksheetName, worksheetData.Image);
+                foreach (var image in worksheetData.Images)
+                {
+                    sut.AddImage(worksheetData.WorksheetName, image);
+                }
             }
         }
 
@@ -204,7 +207,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             foreach (var expectedWorksheetData in ExpectedWorksheetDataList)
             {
                 var drawingsPart = worksheetParts[expectedWorksheetData.WorksheetIndex].DrawingsPart;
-                if (expectedWorksheetData.Image?.ImageBytes != null)
+                if (expectedWorksheetData.Images.Any(x => x?.ImageBytes != null))
                 {
                     drawingsPart.ShouldNotBeNull();
                 }
@@ -220,7 +223,13 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             public int WorksheetIndex { get; set; }
             public string WorksheetName { get; set; }
             public List<ExcelCell[]> Data { get; set; }
-            public ExcelImage Image { get; set; }
+            public List<ExcelImage> Images { get; set; }
+
+            public ExpectedWorksheetData()
+            {
+                Data = new List<ExcelCell[]>();
+                Images = new List<ExcelImage>();
+            }
         }
     }
 }

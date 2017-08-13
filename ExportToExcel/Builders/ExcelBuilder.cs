@@ -13,7 +13,7 @@ namespace ExportToExcel.Builders
     public interface IExcelBuilder : IDisposable
     {
         void AddRowToWorksheet(string worksheetName, ExcelCell[] cells);
-        void WithImage(string worksheetName, ExcelImage excelImage);
+        void AddImage(string worksheetName, ExcelImage excelImage);
         byte[] FinishAndGetExcel();
     }
 
@@ -47,10 +47,10 @@ namespace ExportToExcel.Builders
             _worksheetPartBuilders[worksheetName].AddRow(cells);
         }
 
-        public void WithImage(string worksheetName, ExcelImage excelImage)
+        public void AddImage(string worksheetName, ExcelImage excelImage)
         {
             CreateWorksheetPartBuilderIfNotExist(worksheetName);
-            _worksheetPartBuilders[worksheetName].SetExcelImage(excelImage);
+            _worksheetPartBuilders[worksheetName].AddExcelImage(excelImage);
         }
 
         private void ThrowExceptionIfBuildingIsFinished()
