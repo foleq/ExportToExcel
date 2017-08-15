@@ -224,7 +224,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                     },
                     Images = new List<ExcelImage>
                     {
-                        GetImage("Images/logo.png", ImagePartType.Png)
+                        GetImage("Images/logo.png", ExcelImageType.Png)
                     }
                 },
                 new ExpectedWorksheetData()
@@ -234,9 +234,9 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                     Data = new List<ExcelCell[]>(),
                     Images = new List<ExcelImage>
                     {
-                        GetImage("Images/logo.png", ImagePartType.Png),
-                        GetImage("wrongpath", ImagePartType.Png),
-                        GetImage("Images/logo.jpg", ImagePartType.Jpeg, 4, 4)
+                        GetImage("Images/logo.png", ExcelImageType.Png),
+                        GetImage("wrongpath", ExcelImageType.Png),
+                        GetImage("Images/logo.jpg", ExcelImageType.Jpeg, 4, 4)
                     }
                 },
                 new ExpectedWorksheetData()
@@ -246,7 +246,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                     Data = new List<ExcelCell[]>(),
                     Images = new List<ExcelImage>
                     {
-                        GetImage("Images/logo.jpg", ImagePartType.Jpeg, 2, 2)
+                        GetImage("Images/logo.jpg", ExcelImageType.Jpeg, 2, 2)
                     }
                 },
                 new ExpectedWorksheetData()

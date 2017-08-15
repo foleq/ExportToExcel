@@ -77,7 +77,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             }
         }
 
-        protected static ExcelImage GetImage(string imagePath, ImagePartType type, int colNumber = 1, int rowNumber = 1)
+        protected static ExcelImage GetImage(string imagePath, ExcelImageType type, int colNumber = 1, int rowNumber = 1)
         {
             var imageBytes = File.Exists(imagePath) ? File.ReadAllBytes(imagePath) : null;
             return new ExcelImage(imageBytes, type, colNumber, rowNumber);

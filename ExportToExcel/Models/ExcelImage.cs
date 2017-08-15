@@ -2,19 +2,32 @@
 
 namespace ExportToExcel.Models
 {
+    public enum ExcelImageType
+    {
+        Png,
+        Jpeg
+    }
+
     public class ExcelImage
     {
         public byte[] ImageBytes { get; }
-        public ImagePartType Type { get; }
+        internal ImagePartType Type { get; }
         public int ColNumber { get; }
         public int RowNumber { get; }
 
-        public ExcelImage(byte[] imageBytes, ImagePartType type = ImagePartType.Png, int colNumber = 1, int rowNumber = 1)
+        public ExcelImage(byte[] imageBytes, ExcelImageType type = ExcelImageType.Png, int colNumber = 1, int rowNumber = 1)
         {
             ImageBytes = imageBytes;
-            Type = type;
             ColNumber = colNumber;
             RowNumber = rowNumber;
+            if (type == ExcelImageType.Png)
+            {
+                Type = ImagePartType.Png;
+            }
+            else if (type == ExcelImageType.Jpeg)
+            {
+                Type = ImagePartType.Jpeg;
+            }
         }
     }
 }
