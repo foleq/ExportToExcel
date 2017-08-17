@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using DocumentFormat.OpenXml.Packaging;
+﻿using System;
+using System.Collections.Generic;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExportToExcel.Models;
 using ExportToExcel.StylesheetProvider;
@@ -53,7 +53,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             Should_have_proper_stylesheet();
 
         It should_have_proper_columns_for_worksheets = () =>
-            Should_have_proper_columns_for_worksheets(new Column[0]);
+            Should_have_proper_columns_for_worksheets(new List<Column[]>(){ null });
 
         It should_have_drawing_part_if_image_added = () =>
             Should_have_drawing_part_if_image_added();
@@ -131,7 +131,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             Should_have_proper_stylesheet();
 
         It should_have_proper_columns_for_worksheets = () =>
-            Should_have_proper_columns_for_worksheets(new Column[0]);
+            Should_have_proper_columns_for_worksheets(new List<Column[]>() { null, null });
 
         It should_have_drawing_part_if_image_added = () =>
             Should_have_drawing_part_if_image_added();
@@ -147,18 +147,33 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 {
                     WorksheetIndex = 0,
                     WorksheetName = "sheet_1",
+                    Columns = new []
+                    {
+                        new ExcelColumn()
+                        {
+                            Width = 200,
+                            ColumnNumberStart = 3,
+                            ColumnNumberEnd = 3,
+                        },
+                        new ExcelColumn()
+                        {
+                            Width = 150,
+                            ColumnNumberStart = 2,
+                            ColumnNumberEnd = 2
+                        },
+                    },
                     Data = new List<ExcelCell[]>()
                     {
                         new[]
                         {
-                            new ExcelCell(null, ExcelSheetStyleIndex.Default, true), 
+                            new ExcelCell(null, ExcelSheetStyleIndex.Default), 
                             new ExcelCell("some_very_long_column without_autosizing", ExcelSheetStyleIndex.Bold),
-                            new ExcelCell("some_very_long_column some_very_long_column without_autosizing", ExcelSheetStyleIndex.Default, true),
+                            new ExcelCell("some_very_long_column some_very_long_column without_autosizing", ExcelSheetStyleIndex.Default),
                         },
                         new[]
                         {
-                            new ExcelCell("", ExcelSheetStyleIndex.Default, true),
-                            new ExcelCell("some_long_column with_autosizing", ExcelSheetStyleIndex.Default, true),
+                            new ExcelCell("", ExcelSheetStyleIndex.Default),
+                            new ExcelCell("some_long_column with_autosizing", ExcelSheetStyleIndex.Default),
                             new ExcelCell("row_2_cell_B")
                         }
                     }
@@ -185,10 +200,12 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             Should_have_proper_stylesheet();
 
         It should_have_proper_columns_for_worksheets = () =>
-            Should_have_proper_columns_for_worksheets(new[]
-            {
-                new Column() { Min = 3, Max = 3 },
-                new Column() { Min = 2, Max = 2 },
+            Should_have_proper_columns_for_worksheets(new List<Column[]>() {
+                new[]            
+                {
+                    new Column() { Min = 3, Max = 3, Width = 200 },
+                    new Column() { Min = 2, Max = 2, Width = 150 },
+                }
             });
 
         It should_have_drawing_part_if_image_added = () =>
@@ -285,11 +302,27 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             Should_have_proper_stylesheet();
 
         It should_have_proper_columns_for_worksheets = () =>
-            Should_have_proper_columns_for_worksheets(new Column[0]);
+            Should_have_proper_columns_for_worksheets(new List<Column[]>() { null, null, null, null });
 
         It should_have_drawing_part_if_image_added = () =>
             Should_have_drawing_part_if_image_added();
+    }
 
-        public Establish Context { get => context; set => context = value; }
+    internal class When_creating_excel_with_trying_to_add_two_worksheets_with_same_name : ExcelBuilderSpecs
+    {
+        private static Exception _exception;
+
+        Because of = () =>
+        {
+            const string worksheetName = "test";
+            sut.AddWorksheet(worksheetName);
+            _exception = Catch.Exception((Action)(() => sut.AddWorksheet(worksheetName)));
+        };
+
+        It should_be_an_InvalidOperationException = () =>
+            _exception.ShouldBeOfExactType(typeof(InvalidOperationException));
+
+        It should_have_proper_message = () =>
+            _exception.Message.ShouldEqual("Worksheet with name 'test' already exist in ExcelWorksheetPartBuilder.");
     }
 }

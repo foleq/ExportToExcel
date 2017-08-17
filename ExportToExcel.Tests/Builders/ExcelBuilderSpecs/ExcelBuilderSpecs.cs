@@ -32,7 +32,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
                 new ExcelStylesheetBorderProvider())
             .GetStylesheet();
 
-        protected static string ExpectedExceptionMessage = "ExcelWorksheetPartBuilder has finished building and any adding is not allowed.";
+        protected static string ExpectedExceptionMessageForFinishedBuilding = "ExcelWorksheetPartBuilder has finished building and any adding is not allowed.";
         protected static List<ExpectedWorksheetData> ExpectedWorksheetDataList;
         public static SpreadsheetDocument ResultExcel;
 
@@ -66,6 +66,10 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
         {
             foreach (var worksheetData in worksheetDataList)
             {
+                if (worksheetData.Columns != null)
+                {
+                    sut.AddWorksheet(worksheetData.WorksheetName, worksheetData.Columns);
+                }
                 foreach (var dataRow in worksheetData.Data)
                 {
                     sut.AddRowToWorksheet(worksheetData.WorksheetName, dataRow);
@@ -172,32 +176,38 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             resutStylesheet.OuterXml.ShouldEqual(Stylesheet.OuterXml);
         }
 
-        protected static void Should_have_proper_columns_for_worksheets(Column[] expectedColumns)
+        protected static void Should_have_proper_columns_for_worksheets(List<Column[]> expectedColumnsForWorksheetInOrder)
         {
             foreach (var expectedWorksheetData in ExpectedWorksheetDataList)
             {
-                var columns = GetColumns(expectedWorksheetData.WorksheetIndex);
+                var columns = GetColumnsOrNull(expectedWorksheetData.WorksheetIndex);
+                var expectedColumns = expectedColumnsForWorksheetInOrder[expectedWorksheetData.WorksheetIndex];
+
+                if (expectedColumns == null)
+                {
+                    columns.ShouldBeNull();
+                    continue;
+                }
 
                 columns.Length.ShouldEqual(expectedColumns.Length);
-
                 for (var i = 0; i < columns.Length; i++)
                 {
                     columns[i].BestFit.Value.ShouldBeTrue();
                     columns[i].Min.Value.ShouldEqual(expectedColumns[i].Min.Value);
                     columns[i].Max.Value.ShouldEqual(expectedColumns[i].Max.Value);
                     columns[i].CustomWidth.Value.ShouldBeTrue();
-                    columns[i].Width.Value.ShouldBeGreaterThan(0);
+                    columns[i].Width.Value.ShouldEqual(expectedColumns[i].Width.Value);
                 }
             }
         }
 
-        private static Column[] GetColumns(int worksheetIndex)
+        private static Column[] GetColumnsOrNull(int worksheetIndex)
         {
             var worksheetParts = ResultExcel.WorkbookPart.WorksheetParts.ToArray();
             var worksheet = worksheetParts[worksheetIndex].Worksheet;
             var columns = worksheet.GetFirstChild<Columns>();
 
-            return columns.Elements<Column>().ToArray();
+            return columns?.Elements<Column>().ToArray();
         }
 
         protected static void Should_have_drawing_part_if_image_added()
@@ -224,6 +234,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
         {
             public int WorksheetIndex { get; set; }
             public string WorksheetName { get; set; }
+            public ExcelColumn[] Columns { get; set; }
             public List<ExcelCell[]> Data { get; set; }
             public List<ExcelImage> Images { get; set; }
 

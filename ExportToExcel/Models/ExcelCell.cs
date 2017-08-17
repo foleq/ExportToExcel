@@ -6,15 +6,12 @@ namespace ExportToExcel.Models
     {
         public string Value { get; set; }
         public ExcelSheetStyleIndex StyleIndex { get; set; }
-        public bool WithAutoSize { get; set; }
 
         public ExcelCell(string value, 
-            ExcelSheetStyleIndex styleIndex = ExcelSheetStyleIndex.Default,
-            bool withAutoSize = false)
+            ExcelSheetStyleIndex styleIndex = ExcelSheetStyleIndex.Default)
         {
             Value = value;
             StyleIndex = styleIndex;
-            WithAutoSize = withAutoSize;
         }
     }
 }

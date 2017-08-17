@@ -53,7 +53,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             _exception.ShouldBeOfExactType(typeof(InvalidOperationException));
 
         It should_have_proper_message = () =>
-            _exception.Message.ShouldEqual(ExpectedExceptionMessage);
+            _exception.Message.ShouldEqual(ExpectedExceptionMessageForFinishedBuilding);
     }
 
     internal class When_manipulating_excel_after_creation_by_adding_row_to_existing_sheet : When_manipulating_excel_after_creation
@@ -69,7 +69,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             _exception.ShouldBeOfExactType(typeof(InvalidOperationException));
 
         It should_have_proper_message = () =>
-            _exception.Message.ShouldEqual(ExpectedExceptionMessage);
+            _exception.Message.ShouldEqual(ExpectedExceptionMessageForFinishedBuilding);
     }
 
     internal class When_manipulating_excel_after_creation_by_adding_row_to_not_existing_sheet : When_manipulating_excel_after_creation
@@ -85,7 +85,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             _exception.ShouldBeOfExactType(typeof(InvalidOperationException));
 
         It should_have_proper_message = () =>
-            _exception.Message.ShouldEqual(ExpectedExceptionMessage);
+            _exception.Message.ShouldEqual(ExpectedExceptionMessageForFinishedBuilding);
     }
 
     internal class When_manipulating_excel_after_creation_by_again_getting_excel : When_manipulating_excel_after_creation
@@ -108,7 +108,7 @@ namespace ExportToExcel.Tests.Builders.ExcelBuilderSpecs
             Should_have_proper_stylesheet();
 
         It should_have_proper_columns_for_worksheets = () =>
-            Should_have_proper_columns_for_worksheets(new Column[0]);
+            Should_have_proper_columns_for_worksheets(new List<Column[]>() { null });
 
         It should_have_drawing_part_if_image_added = () =>
             Should_have_drawing_part_if_image_added();

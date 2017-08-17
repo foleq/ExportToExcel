@@ -46,9 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builders\ExcelBuilder.cs" />
+    <Compile Include="Providers\ExcelColumnProvider.cs" />
     <Compile Include="Builders\ExcelDrawingsPartBuilder.cs" />
     <Compile Include="Factories\ExcelCellFactory.cs" />
     <Compile Include="Models\ExcelCell.cs" />
+    <Compile Include="Models\ExcelColumn.cs" />
     <Compile Include="Models\ExcelImage.cs" />
     <Compile Include="StylesheetProvider\ExcelStylesheetProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

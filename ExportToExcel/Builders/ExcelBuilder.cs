@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -12,6 +13,7 @@ namespace ExportToExcel.Builders
 {
     public interface IExcelBuilder : IDisposable
     {
+        void AddWorksheet(string worksheetName, ExcelColumn[] columns = null);
         void AddRowToWorksheet(string worksheetName, ExcelCell[] cells);
         void AddImage(string worksheetName, ExcelImage excelImage);
         byte[] FinishAndGetExcel();
@@ -39,6 +41,15 @@ namespace ExportToExcel.Builders
             _document.AddWorkbookPart();
         }
 
+        public void AddWorksheet(string worksheetName, ExcelColumn[] columns = null)
+        {
+            if (_worksheetPartBuilders.ContainsKey(worksheetName))
+            {
+                throw new InvalidOperationException($"Worksheet with name '{worksheetName}' already exist in ExcelWorksheetPartBuilder.");
+            }
+            CreateWorksheetPartBuilderIfNotExist(worksheetName, columns);
+        }
+
         public void AddRowToWorksheet(string worksheetName, ExcelCell[] cells)
         {
             ThrowExceptionIfBuildingIsFinished();
@@ -61,14 +72,32 @@ namespace ExportToExcel.Builders
             }
         }
 
-        private void CreateWorksheetPartBuilderIfNotExist(string worksheetName)
+        private void CreateWorksheetPartBuilderIfNotExist(string worksheetName, ExcelColumn[] columns = null)
         {
             if (_worksheetPartBuilders.ContainsKey(worksheetName))
             {
                 return;
             }
-            var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>(), _excelCellFactory);
+            var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>(), 
+                _excelCellFactory, GetColumns(columns));
             _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);
+        }
+
+        private static Columns GetColumns(ExcelColumn[] columns)
+        {
+            if (columns == null)
+            {
+                return null;
+            }
+            var cols = columns.Select(col => new Column()
+            {
+                BestFit = true,
+                Min = col.ColumnNumberStart,
+                Max = col.ColumnNumberEnd,
+                CustomWidth = true,
+                Width = col.Width
+            });
+            return new Columns(cols);
         }
 
         public byte[] FinishAndGetExcel()
