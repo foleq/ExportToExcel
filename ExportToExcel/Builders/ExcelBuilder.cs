@@ -7,6 +7,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExportToExcel.Factories;
 using ExportToExcel.Models;
+using ExportToExcel.Providers;
 using ExportToExcel.StylesheetProvider;
 
 namespace ExportToExcel.Builders
@@ -23,16 +24,19 @@ namespace ExportToExcel.Builders
     {
         private readonly IExcelStylesheetProvider _stylesheetProvider;
         private readonly IExcelCellFactory _excelCellFactory;
+        private readonly IExcelCellNameProvider _excelCellNameProvider;
         private readonly MemoryStream _memoryStream;
         private readonly SpreadsheetDocument _document;
         private readonly Dictionary<string, ExcelWorksheetPartBuilder> _worksheetPartBuilders;
         private bool _buildingIsFinished;
 
         public ExcelBuilder(IExcelStylesheetProvider stylesheetProvider,
-            IExcelCellFactory excelCellFactory)
+            IExcelCellFactory excelCellFactory,
+            IExcelCellNameProvider excelCellNameProvider)
         {
             _stylesheetProvider = stylesheetProvider;
             _excelCellFactory = excelCellFactory;
+            _excelCellNameProvider = excelCellNameProvider;
             _worksheetPartBuilders = new Dictionary<string, ExcelWorksheetPartBuilder>();
             _buildingIsFinished = false;
 
@@ -79,7 +83,7 @@ namespace ExportToExcel.Builders
                 return;
             }
             var worksheetBuilder = new ExcelWorksheetPartBuilder(_document.WorkbookPart.AddNewPart<WorksheetPart>(), 
-                _excelCellFactory, GetColumns(columns));
+                _excelCellFactory, _excelCellNameProvider, GetColumns(columns));
             _worksheetPartBuilders.Add(worksheetName, worksheetBuilder);
         }
 

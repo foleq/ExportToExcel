@@ -10,7 +10,7 @@ namespace ConsoleAppForExportToExcel
             var myExcelBuilderFactor = new MyExcelBuilderFactory();
             var myExcelBuilder = myExcelBuilderFactor.CreateMyExcelBuilder();
 
-            var byteArray = myExcelBuilder.BuildExcelFile(4, 250, 10000);
+            var byteArray = myExcelBuilder.BuildExcelFile(2, 50, 1000);
             const string fileName = "ExportedFile.xlsx";
 
             using (var fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write))

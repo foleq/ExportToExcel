@@ -1,4 +1,5 @@
-﻿using ExportToExcel.Builders;
+﻿using System;
+using ExportToExcel.Builders;
 using ExportToExcel.Models;
 using ExportToExcel.StylesheetProvider;
 
@@ -36,12 +37,22 @@ namespace ConsoleAppForExportToExcel.ExportToExcel
                     cells = new ExcelCell[numberOfColumns];
                     for (var columnIndex = 0; columnIndex < numberOfColumns; columnIndex++)
                     {
-                        cells[columnIndex] = new ExcelCell($"cell_value_{rowIndex}_{columnIndex}", ExcelSheetStyleIndex.Default);
+                        Uri uri = null;
+                        switch (columnIndex)
+                        {
+                            case 0:
+                                uri = new Uri("http://wykop.pl");
+                                break;
+                            case 1:
+                                uri = new Uri("http://wp.pl");
+                                break;
+                        }
+                        cells[columnIndex] = new ExcelCell($"cell_value_{rowIndex}_{columnIndex}", ExcelSheetStyleIndex.Default, uri);
                     }
                     _excelBuilder.AddRowToWorksheet(worksheetName, cells);
                 }
             }
-            
+
             return _excelBuilder.FinishAndGetExcel();
         }
     }
