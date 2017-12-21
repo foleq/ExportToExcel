@@ -1,5 +1,6 @@
 ﻿using ExportToExcel.Builders;
 using ExportToExcel.Factories;
+using ExportToExcel.Providers;
 using ExportToExcel.StylesheetProvider;
 
 namespace ConsoleAppForExportToExcel.ExportToExcel
@@ -20,7 +21,8 @@ namespace ConsoleAppForExportToExcel.ExportToExcel
                 new ExcelStylesheetBorderProvider()
                 );
             var excelCellFactory = new ExcelCellFactory(excelStylesheetProvider);
-            var excelBuilder = new ExcelBuilder(excelStylesheetProvider, excelCellFactory);
+            var excelCellNameProvider = new ExcelCellNameProvider();
+            var excelBuilder = new ExcelBuilder(excelStylesheetProvider, excelCellFactory, excelCellNameProvider);
             return new MyExcelBuilder(excelBuilder);
         }
     }
